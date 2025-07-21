@@ -1,11 +1,132 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>GameWall</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GameWall - Million Squares</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      overflow-x: hidden;
+    }
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(20px, 1fr));
+      gap: 1px;
+      width: 100vw;
+      max-width: 100%;
+    }
+    .square {
+      background-color: #eee;
+      aspect-ratio: 1 / 1;
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .square img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+    .upload-form {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 2px solid #ccc;
+      padding: 20px;
+      z-index: 10;
+    }
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.5);
+      z-index: 5;
+    }
+  </style>
 </head>
 <body>
-  <h1>Welcome to GameWall!</h1>
-  <p>My first website with GitHub Pages 🚀</p>
-</body>
+  <div style="padding: 10px; background: #222; color: white; text-align: center">
+    <b>🎮 GameWall | $2 لكل مربّع</b> — اختر مربّعًا، ادفع عبر Wish (71322836)، ثم ارفع شعارك!
+    <br>
+    <a href="https://www.instagram.com/yahya_agha4?igsh=MWMzdnBlZTdjOXRmZA==" style="color: #1da1f2">Instagram</a> |
+    <a href="https://www.facebook.com/share/p/1B1VUV6uyj/" style="color: #00b2ff">Messenger</a>
+  </div>
+  <div id="grid"></div>  <div class="overlay" id="overlay"></div>  <div class="upload-form" id="uploadForm">
+    <p>📤 ارفع صورة مربّعك بعد الدفع</p>
+    <input type="file" id="imageInput" accept="image/*" /><br /><br />
+    <button onclick="saveImage()">تأكيد</button>
+    <button onclick="closeForm()">إلغاء</button>
+  </div>  <script>
+    const grid = document.getElementById('grid');
+    const uploadForm = document.getElementById('uploadForm');
+    const overlay = document.getElementById('overlay');
+    const imageInput = document.getElementById('imageInput');
+    let selectedSquare = null;
+
+    const total = 1000000;
+    const perRow = 100;
+    const perPage = 500;
+    let loaded = 0;
+
+    function loadSquares() {
+      for (let i = 0; i < perPage && loaded < total; i++) {
+        const index = loaded;
+        const div = document.createElement('div');
+        div.className = 'square';
+        div.dataset.index = index;
+
+        const saved = localStorage.getItem('square_' + index);
+        if (saved) {
+          const img = document.createElement('img');
+          img.src = saved;
+          div.appendChild(img);
+        }
+
+        div.onclick = () => {
+          selectedSquare = index;
+          imageInput.value = "";
+          uploadForm.style.display = 'block';
+          overlay.style.display = 'block';
+        };
+
+        grid.appendChild(div);
+        loaded++;
+      }
+    }
+
+    function closeForm() {
+      uploadForm.style.display = 'none';
+      overlay.style.display = 'none';
+    }
+
+    function saveImage() {
+      const file = imageInput.files[0];
+      if (!file || !selectedSquare) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const dataURL = e.target.result;
+        localStorage.setItem('square_' + selectedSquare, dataURL);
+        document.querySelectorAll('.square')[selectedSquare].innerHTML = `<img src="${dataURL}" />`;
+        closeForm();
+      }
+      reader.readAsDataURL(file);
+    }
+
+    window.addEventListener('scroll', () => {
+      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+        loadSquares();
+      }
+    });
+
+    // Load initial squares
+    loadSquares();
+  </script></body>
 </html>
